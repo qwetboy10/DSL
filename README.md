@@ -2,6 +2,17 @@
 The Dent Scripting Language
 
 ```
+types
+bool -> true / false
+int -> 64 bit
+char -> utf 16 char
+double ->  64 bit float
+list -> linkedlist? of thing
+string -> just a linked list of chars with a special literal format
+```
+
+
+```
 var a = 3
 a = 3.0
 var b = "A"
@@ -12,6 +23,13 @@ var m = 5
 print(n/m) > 0
 print(n: double / m) > .6
 print(2 ** 5) > 32
+```
+
+```
+var a = "abc"
+print(a[1]) > "b"
+var c = "123${a+1}456"
+print(c) > "123abc1456"
 ```
 
 ```
@@ -56,7 +74,7 @@ print(x) > 3
 
 ```
 var list = [1,2,3,4,5]
-list.map(x -> x+5).filter(it < 8).reduce(a,b -> a+b) > i dont know some number u can figure it out
+list.map(x => x+5).filter(it < 8).reduce(a,b => a+b) > i dont know some number u can figure it out
 ```
 
 ```
@@ -78,9 +96,14 @@ for(var i in list) print(i)
 
 ```
 fun addOne(x) => x+1
+above line is equal to var addOne = x => x+1
 fun addTwo(x) {
   return x+2
 }
+fun typed(int x) {
+  return x
+}
+type is optional and is only checked at runtime
 
 print(addTwo(addOne(1))) > 4
 ```
