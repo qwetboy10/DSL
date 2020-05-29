@@ -108,3 +108,26 @@ type is optional and is only checked at runtime
 print(addTwo(addOne(1))) > 4
 ```
 
+```
+|> means rest of file is bash
+^val^ is used to put in values (technically a special char but who cares)
+I know its a weird choice but all the normal ones have meaning in bash
+
+var dir = |> pwd
+print(dir) > "/home/tristan" or whatever
+
+var files = |> ls
+for(var file in files.words()) print file
+
+var verboseFiles = |> ls -l
+for(var file in files.lines()) print file
+
+fun echo(x) => |> echo ^x^
+
+echo(3) > "3"
+all bash output is a string
+
+fun printChar() => |> echo \^
+escape ^ with backslash
+printChar() > "^"
+
