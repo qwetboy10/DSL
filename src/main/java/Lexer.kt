@@ -37,7 +37,7 @@ class Lexer private constructor(private val program: String) {
 
     private fun next() = currentIndex++
 
-    private fun atEnd(): Boolean = currentIndex == program.length
+    private fun atEnd(): Boolean = currentIndex >= program.length
 
     private fun token(type: TokenType): Token = Token(type, lineNumber)
 
@@ -58,10 +58,10 @@ class Lexer private constructor(private val program: String) {
                 in 'a'..'z', in 'A'..'Z', '_' -> identifier()
                 '"' -> string()
                 '\'' -> char()
+                '$' -> command()
                 else -> token(
                     when (it) {
                         '!' -> BANG
-                        '$' -> DOLLAR
                         '(' -> OPEN_PAREN
                         ')' -> CLOSE_PAREN
                         '[' -> OPEN_SQUARE
@@ -72,6 +72,7 @@ class Lexer private constructor(private val program: String) {
                         ',' -> COMMA
                         ';' -> SEMICOLON
                         '.' -> DOT
+                        '\\' -> BACKSLASH
                         '\n' -> NEWLINE.also { lineNumber++ }
                         '?' -> when {
                             consume('?') -> QUESTION_QUESTION
@@ -128,6 +129,15 @@ class Lexer private constructor(private val program: String) {
         }
     }
 
+    //TODO add interpolation
+    private fun command(): Token {
+        if (!consume('(')) throw LexException("$ must be found before '('", lineNumber)
+        val command = StringBuffer()
+        while (!consume(')')) command.append(previous())
+        if(atEnd()) throw LexException("Invalid Command Expression", lineNumber)
+        return token(COMMAND, command.toString())
+    }
+
     private fun number(): Token {
         val number = StringBuilder()
         var isDouble = false
@@ -140,12 +150,14 @@ class Lexer private constructor(private val program: String) {
             while (consume('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.'))
                 number.append(previous().also { if (it == '.') isDouble = true })
         }
+
         return if (isDouble) token(INT, number.toString().toLong()) else token(DOUBLE, number.toString().toDouble())
     }
 
     private fun identifier(): Token {
         val identifier = StringBuilder()
-        while (get().let { it in 'a'..'z' || it in 'a'..'z' || it == '_' || it in '0'..'9' })
+        identifier.append(previous())
+        while (get().let { it in 'a'..'z' || it in 'A'..'Z' || it == '_' || it in '0'..'9' })
             identifier.append(previous())
 
         identifier.toString().let {
