@@ -106,7 +106,6 @@ class Lexer private constructor(private val program: String) {
                         }
                         '|' -> when {
                             consume('=') -> BAR_EQUAL
-                            consume('>') -> BAR_ARROW
                             else -> BAR
                         }
                         '<' -> when {
