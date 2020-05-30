@@ -1,7 +1,7 @@
 import TokenType.*
 import io.kotest.assertions.asClue
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeTypeOf
 import io.kotlintest.specs.StringSpec
 
@@ -88,5 +88,85 @@ class LexerTests : StringSpec({
         }
 
     }
-}
-)
+    "Test Numbers" {
+        val stuff = "0 1 2 1.0 3333.3333 0x123 0xa 0xA 0Xa 0XA"
+        val correct = listOf(0, 1, 2, 1.0, 3333.3333, 0x123, 0xa, 0xa, 0xa, 0xa)
+        var iter = correct.iterator()
+        Lexer.lex(stuff).forEach { x ->
+            x.asClue {
+                if (it.type != EOF) {
+                    val cor = iter.next()
+                    if (cor is Int) {
+                        it.type shouldBe INT
+                        it.value.shouldBeTypeOf<Long>()
+                        it.value shouldBe cor
+                    }
+                    if (cor is Double) {
+                        it.type shouldBe DOUBLE
+                        it.value.shouldBeTypeOf<Double>()
+                        it.value shouldBe cor
+                    }
+                }
+            }
+        }
+    }
+    "Test Chars" {
+        val stuff = """'a'
+                      |'0'
+                      |'\t'
+                      |'\n'
+                      |'\\'""".trimMargin()
+        val correct = listOf('a', '0', '\t', '\n', '\\')
+        val iter = correct.iterator()
+        Lexer.lex(stuff).forEach { x ->
+            x.asClue {
+                if (it.type != EOF && it.type != NEWLINE) {
+                    val cor = iter.next()
+                    it.type shouldBe CHAR
+                    it.value.shouldBeTypeOf<Char>()
+                    it.value shouldBe cor
+                }
+            }
+        }
+    }
+    "Test Strings" {
+        val stuff = """"a" "abc" """"".trimIndent()
+        var correct = listOf("a", "abc", "").iterator()
+        val lexed = Lexer.lex(stuff)
+        lexed.forEach {
+            if (it.type != EOF) {
+                it.type shouldBe STRING
+                it.value.shouldBeTypeOf<String>()
+                it.value shouldBe correct.next()
+            }
+        }
+
+    }
+    "Unbounded String" {
+        shouldThrow<LexException> {
+            Lexer.lex("\"abc")
+        }
+    }
+    "Test Commands" {
+        val stuff = """$(ls) $(ls -l) $() $(abadad)""".trimIndent()
+        var correct = listOf("ls", "ls -l", "", "abadad").iterator()
+        val lexed = Lexer.lex(stuff)
+        lexed.forEach {
+            if (it.type != EOF) {
+                it.type shouldBe COMMAND
+                it.value.shouldBeTypeOf<String>()
+                it.value shouldBe correct.next()
+            }
+        }
+    }
+    "Unbounded Command" {
+        shouldThrow<LexException> {
+            Lexer.lex("$(")
+        }
+    }
+    "Invalid Command" {
+        shouldThrow<LexException> {
+            Lexer.lex("$")
+        }
+    }
+})
