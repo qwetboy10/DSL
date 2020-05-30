@@ -2,22 +2,27 @@ import TokenType.*
 import java.io.File
 
 class Lexer(private val program: String) {
-    private val keywords = mapOf<String, TokenType>("if" to IF, "for" to FOR, "while" to WHILE, "var" to VAR)
+
+    public fun lex(): MutableList<Token> {
+        val tokens = mutableListOf<Token>();
+        while (!atEnd()) tokens.add(getToken())
+        tokens.add(token(EOF))
+        return tokens;
+    }
+
+    private val keywords = mapOf<String, TokenType>("if" to IF, "for" to FOR, "while" to WHILE, "var" to VAR, "null" to NULL)
 
     private var currentIndex: Int = 0
 
     private var lineNumber = 1
 
-    private fun current(): Char = program[currentIndex]
+    private fun current(): Char = if(!atEnd()) program[currentIndex] else '\u0000'
 
     private fun previous(): Char = if (currentIndex > 0) program[currentIndex - 1] else '\u0000'
 
     private fun next() = currentIndex++
 
-    private fun hasNext(): Boolean = currentIndex < program.length
-
-    //ronak please don't bully me this is a highly necessary function
-    private fun atEnd(): Boolean = !hasNext()
+    private fun atEnd(): Boolean = currentIndex == program.length
 
     private fun token(type: TokenType): Token = Token(type, lineNumber)
 
@@ -25,13 +30,13 @@ class Lexer(private val program: String) {
 
     private fun get(): Char = current().also { next() }
 
-    private fun match(vararg chars: Char): Boolean = hasNext() && chars.contains(current())
+    private fun match(vararg chars: Char): Boolean = !atEnd() && chars.contains(current())
 
     private fun consume(vararg chars: Char): Boolean = match(*chars).also { if (it) next() }
 
     private fun getToken(): Token {
         var char = get();
-        while (hasNext() && char == ' ') char = get();
+        while (!atEnd() && char == ' ') char = get();
         return char.let {
             when (it) {
                 in '0'..'9' -> number()
@@ -145,7 +150,19 @@ class Lexer(private val program: String) {
     //TODO support string interpolation
     private fun string(): Token {
         val string = StringBuilder()
-        while (!consume('"')) string.append(previous())
+        while (!consume('"')) {
+            previous().let {
+                if (it == '\\') {
+                    when (get()) {
+                        't' -> string.append('\t')
+                        'n' -> string.append('\n')
+                        '\\' -> string.append('\\')
+                        else -> throw LexException("Invalid Escape Sequence", lineNumber)
+                    }
+                } else
+                    string.append(it)
+            }
+        }
         if (atEnd() && previous() != '"') throw LexException("Invalid String", lineNumber)
         return token(STRING, string.toString())
     }
@@ -156,11 +173,5 @@ class Lexer(private val program: String) {
         else throw LexException("Invalid Character", lineNumber)
     }
 
-    public fun lex(): MutableList<Token> {
-        val tokens = mutableListOf<Token>();
-        while (hasNext()) tokens.add(getToken())
-        tokens.add(token(EOF))
-        return tokens;
-    }
 
 }
