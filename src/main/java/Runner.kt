@@ -5,4 +5,5 @@ fun main() {
     while (true) {
         Lexer.lex(scan.nextLine() + "\n").forEach { println(it) }
     }
+
 }

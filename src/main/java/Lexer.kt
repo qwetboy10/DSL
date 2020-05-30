@@ -1,5 +1,4 @@
 import TokenType.*
-import java.io.File
 
 
 class Lexer private constructor(private val program: String) {
@@ -10,11 +9,11 @@ class Lexer private constructor(private val program: String) {
         }
     }
 
-    public fun lex(): MutableList<Token> {
-        val tokens = mutableListOf<Token>();
+    private fun lex(): MutableList<Token> {
+        val tokens = mutableListOf<Token>()
         while (!atEnd()) tokens.add(getToken())
         tokens.add(token(EOF))
-        return tokens;
+        return tokens
     }
 
     private val keywords =
@@ -51,8 +50,8 @@ class Lexer private constructor(private val program: String) {
     private fun consume(vararg chars: Char): Boolean = match(*chars).also { if (it) next() }
 
     private fun getToken(): Token {
-        var char = get();
-        while (!atEnd() && char == ' ') char = get();
+        var char = get()
+        while (!atEnd() && char == ' ') char = get()
         return char.let {
             when (it) {
                 in '0'..'9' -> number()
@@ -132,7 +131,7 @@ class Lexer private constructor(private val program: String) {
 
     private fun number(): Token {
         val number = StringBuilder()
-        var isDouble = false;
+        var isDouble = false
         if (previous() == '0' && consume('x', 'X')) {
             while (consume('0', '1', '2', '3', '4', '5', '6', '7', '8', '9'))
                 number.append(previous())
