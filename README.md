@@ -109,25 +109,24 @@ print(addTwo(addOne(1))) > 4
 ```
 
 ```
-|> means rest of file is bash
+$() means interpret as bash
 ^val^ is used to put in values (technically a special char but who cares)
 I know its a weird choice but all the normal ones have meaning in bash
 
-var dir = |> pwd
+var dir = $(pwd)
 print(dir) > "/home/tristan" or whatever
 
-var files = |> ls
+var files = $(ls)
 for(var file in files.words()) print file
 
-var verboseFiles = |> ls -l
-for(var file in files.lines()) print file
+for(var file in $(ls -l).lines()) print file
 
-fun echo(x) => |> echo ^x^
+fun echo(x) => $(echo ^x^)
 
 echo(3) > "3"
 all bash output is a string
 
-fun printChar() => |> echo \^
+fun printChar() => $(echo \^)
 escape ^ with backslash
 printChar() > "^"
 
