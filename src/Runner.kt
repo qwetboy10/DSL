@@ -1,7 +1,8 @@
-fun main() {
-    val lexer = Lexer("3 + 4 - 2")
+import java.util.*
 
-    lexer.lex().forEach {
-        println(it)
+fun main() {
+    val scan = Scanner(System.`in`)
+    while (true) {
+        Lexer.lex(scan.nextLine() + "\n").forEach { println(it) }
     }
 }

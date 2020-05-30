@@ -1,7 +1,14 @@
 import TokenType.*
 import java.io.File
 
-class Lexer(private val program: String) {
+
+class Lexer private constructor(private val program: String) {
+
+    companion object {
+        fun lex(program: String): MutableList<Token> {
+            return Lexer(program).lex()
+        }
+    }
 
     public fun lex(): MutableList<Token> {
         val tokens = mutableListOf<Token>();
@@ -11,7 +18,15 @@ class Lexer(private val program: String) {
     }
 
     private val keywords =
-        mapOf<String, TokenType>("if" to IF, "for" to FOR, "while" to WHILE, "var" to VAR, "null" to NULL)
+        mapOf(
+            "if" to IF,
+            "for" to FOR,
+            "while" to WHILE,
+            "var" to VAR,
+            "null" to NULL,
+            "true" to TRUE,
+            "false" to FALSE
+        )
 
     private var currentIndex: Int = 0
 
@@ -132,11 +147,9 @@ class Lexer(private val program: String) {
 
     private fun identifier(): Token {
         val identifier = StringBuilder()
-        while (get().let {
-                it in 'a'..'z' || it in 'a'..'z' || it == '_' || it in '0'..'9'
-            }) {
+        while (get().let { it in 'a'..'z' || it in 'a'..'z' || it == '_' || it in '0'..'9' })
             identifier.append(previous())
-        }
+
         identifier.toString().let {
             val tokenType = keywords.getOrDefault(it, IDENTIFIER)
             return if (tokenType == IDENTIFIER)
