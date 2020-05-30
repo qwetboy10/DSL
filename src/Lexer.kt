@@ -10,13 +10,14 @@ class Lexer(private val program: String) {
         return tokens;
     }
 
-    private val keywords = mapOf<String, TokenType>("if" to IF, "for" to FOR, "while" to WHILE, "var" to VAR, "null" to NULL)
+    private val keywords =
+        mapOf<String, TokenType>("if" to IF, "for" to FOR, "while" to WHILE, "var" to VAR, "null" to NULL)
 
     private var currentIndex: Int = 0
 
     private var lineNumber = 1
 
-    private fun current(): Char = if(!atEnd()) program[currentIndex] else '\u0000'
+    private fun current(): Char = if (!atEnd()) program[currentIndex] else '\u0000'
 
     private fun previous(): Char = if (currentIndex > 0) program[currentIndex - 1] else '\u0000'
 
@@ -126,7 +127,7 @@ class Lexer(private val program: String) {
             while (consume('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.'))
                 number.append(previous().also { if (it == '.') isDouble = true })
         }
-        return if (isDouble) token(INT, number().toString().toLong()) else token(DOUBLE, number().toString().toDouble())
+        return if (isDouble) token(INT, number.toString().toLong()) else token(DOUBLE, number.toString().toDouble())
     }
 
     private fun identifier(): Token {
@@ -137,9 +138,7 @@ class Lexer(private val program: String) {
             identifier.append(previous())
         }
         identifier.toString().let {
-            val tokenType = keywords.getOrDefault(it) {
-                IDENTIFIER
-            } as TokenType
+            val tokenType = keywords.getOrDefault(it, IDENTIFIER)
             return if (tokenType == IDENTIFIER)
                 token(IDENTIFIER, it)
             else
@@ -172,6 +171,5 @@ class Lexer(private val program: String) {
         if (consume('\'')) return token(CHAR, char)
         else throw LexException("Invalid Character", lineNumber)
     }
-
 
 }
